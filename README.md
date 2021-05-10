@@ -9,4 +9,4 @@ An agent for ANL 2021
 # Points of interest in PersistentState.java
 1) void update(NegotiationData negotiationData) - does the offline learning for the agent for a given negotiationData object
 # Points of interest in NegotiationData.java
-1) Nothing very interesting, keeps track about the oppenent name, best util we ever got from him and the util agreed upon at the end of a negotiation\
+1) Nothing very interesting, keeps track about the oppenent name, best util we ever got from him and the util agreed upon at the end of a negotiation
