@@ -1,0 +1,62 @@
+/opt/java/openjdk/jre/../bin/javadoc
+@options
+@packages
+-classpath
+'/root/.m2/repository/geniusweb/party/1.6.0/party-1.6.0.jar:/root/.m2/repository/geniusweb/timeline/1.6.0/timeline-1.6.0.jar:/root/.m2/repository/geniusweb/profile/1.6.0/profile-1.6.0.jar:/root/.m2/repository/geniusweb/issuevalue/1.6.0/issuevalue-1.6.0.jar:/root/.m2/repository/geniusweb/events/1.6.0/events-1.6.0.jar:/root/.m2/repository/geniusweb/references/1.6.0/references-1.6.0.jar:/root/.m2/repository/tudelft/utilities/repository/1.1.2/repository-1.1.2.jar:/root/.m2/repository/tudelft/utilities/tree/1.1.2/tree-1.1.2.jar:/root/.m2/repository/tudelft/utilities/listener/1.1.1/listener-1.1.1.jar:/root/.m2/repository/geniusweb/bidspace/1.6.0/bidspace-1.6.0.jar:/root/.m2/repository/geniusweb/profileconnection/1.6.0/profileconnection-1.6.0.jar:/root/.m2/repository/javax/websocket/javax.websocket-api/1.1/javax.websocket-api-1.1.jar:/root/.m2/repository/tudelft/utilities/logging/1.0.1/logging-1.0.1.jar:/root/.m2/repository/tudelft/utilities/immutablelist/1.1.2/immutablelist-1.1.2.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.9.6/jackson-annotations-2.9.6.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.9.6/jackson-databind-2.9.6.jar:/root/.m2/repository/com/fasterxml/jackson/dataformat/jackson-dataformat-smile/2.9.6/jackson-dataformat-smile-2.9.6.jar:/root/.m2/repository/com/fasterxml/jackson/jaxrs/jackson-jaxrs-json-provider/2.9.6/jackson-jaxrs-json-provider-2.9.6.jar:/root/.m2/repository/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.9.6/jackson-jaxrs-base-2.9.6.jar:/root/.m2/repository/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.9.6/jackson-module-jaxb-annotations-2.9.6.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'/root/src/main/java:/root/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2021. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/root/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'learningagent 1.6.0 API'
+-linkoffline
+'https://docs.oracle.com/javase/8/docs/api' '/root/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'learningagent 1.6.0 API'
+geniusweb.exampleparties.learningagent
+/root/.m2/repository/geniusweb/party/1.6.0/party-1.6.0.jar = 1620276808644
+/root/.m2/repository/geniusweb/timeline/1.6.0/timeline-1.6.0.jar = 1620276808541
+/root/.m2/repository/geniusweb/profile/1.6.0/profile-1.6.0.jar = 1620276808752
+/root/.m2/repository/geniusweb/issuevalue/1.6.0/issuevalue-1.6.0.jar = 1620276808786
+/root/.m2/repository/geniusweb/events/1.6.0/events-1.6.0.jar = 1620276808858
+/root/.m2/repository/geniusweb/references/1.6.0/references-1.6.0.jar = 1620276808790
+/root/.m2/repository/tudelft/utilities/repository/1.1.2/repository-1.1.2.jar = 1620276808899
+/root/.m2/repository/tudelft/utilities/tree/1.1.2/tree-1.1.2.jar = 1620276808953
+/root/.m2/repository/tudelft/utilities/listener/1.1.1/listener-1.1.1.jar = 1620276808975
+/root/.m2/repository/geniusweb/bidspace/1.6.0/bidspace-1.6.0.jar = 1620276809012
+/root/.m2/repository/geniusweb/profileconnection/1.6.0/profileconnection-1.6.0.jar = 1620276809057
+/root/.m2/repository/javax/websocket/javax.websocket-api/1.1/javax.websocket-api-1.1.jar = 1620276809218
+/root/.m2/repository/tudelft/utilities/logging/1.0.1/logging-1.0.1.jar = 1620276809152
+/root/.m2/repository/tudelft/utilities/immutablelist/1.1.2/immutablelist-1.1.2.jar = 1620276809182
+/root/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.jar = 1620276809616
+/root/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.9.6/jackson-annotations-2.9.6.jar = 1620276809366
+/root/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.9.6/jackson-databind-2.9.6.jar = 1620276811182
+/root/.m2/repository/com/fasterxml/jackson/dataformat/jackson-dataformat-smile/2.9.6/jackson-dataformat-smile-2.9.6.jar = 1620276809476
+/root/.m2/repository/com/fasterxml/jackson/jaxrs/jackson-jaxrs-json-provider/2.9.6/jackson-jaxrs-json-provider-2.9.6.jar = 1620276809463
+/root/.m2/repository/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.9.6/jackson-jaxrs-base-2.9.6.jar = 1620276809608
+/root/.m2/repository/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.9.6/jackson-module-jaxb-annotations-2.9.6.jar = 1620276809709
+/root/src/main/java = 1620276170096
+/root/target/generated-sources/annotations = 1620276929447
+/root/target/apidocs/allclasses-frame.html = 1620277074786
+/root/target/apidocs/allclasses-noframe.html = 1620277074786
+/root/target/apidocs/constant-values.html = 1620277074740
+/root/target/apidocs/deprecated-list.html = 1620277074785
+/root/target/apidocs/help-doc.html = 1620277074793
+/root/target/apidocs/index-all.html = 1620277074779
+/root/target/apidocs/index.html = 1620277074793
+/root/target/apidocs/overview-tree.html = 1620277074764
+/root/target/apidocs/package-list = 1620277074709
+/root/target/apidocs/script.js = 1620277074802
+/root/target/apidocs/stylesheet.css = 1620277074793
