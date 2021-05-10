@@ -1,6 +1,6 @@
 # ANL_Agent
-An agent for ANL 2021
-.....................
+An agent for ANL 2021\
+.....................\
 Points of interest for ANL2021 (methods to focus on) in LearningAgent.java
 1) void processAction(Action action) - once an oppenent has finished his turn we are notifited via this function. we can get oppenent (name, util func, etc) information here.
 2) void processAgreements(Agreements agreements) - once negoration is finished this function is called, we can track history/ save the agreed utility etc here.
