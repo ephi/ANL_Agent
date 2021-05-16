@@ -1,0 +1,20 @@
+ANL_Analyzer
+------------
+1) Define ANL_RES_PATH as a path to the json folder of results
+2) define AUL map
+3) for each *_negotiation.json file in ANL_RES_PATH
+  3.2) define UL map
+  3.2) for each "offer" in "actions" get "utilities"
+       3.3) for each "agent name" in "utilities" do:
+       	    3.4) if util list UL["agent name"] doesn't exist for "agent name" create a UL["agent name"] for him
+	    3.5) append util value to UL["agent name"]
+  3.6) for "accept" in "actions"
+       3.7) for each "agent name" in "utilities" do: 
+           3.8) append util value to UL["agent name"] marked as accepted
+           3.9) if avg util AUL["agent name"] doesn't exist create it
+           3.10) append util("agent name") to AUL["agent name"]
+  3.11) plot for each element in UL historical data of utils offered and accepted util (accepted util should be marked differently)
+3) for each agent in AUL calculate average util. Sum all AUL["agent name"] into A_AUL["agent name"], then, A_AUL["agent name"] <= A_AUL["agent name"]/# of *_negotiation.json files 
+4) plot the accepted utils for all agents
+5) revesred (high to low) the A_AUL, and print the agent names with avg util values to determine the ranking 
+        
