@@ -1,14 +1,19 @@
-package geniusweb.exampleparties.learningagent;
+package geniusweb.exampleparties.learningagent; // TODO: change name
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 
 import geniusweb.actions.FileLocation;
@@ -27,6 +32,11 @@ import geniusweb.inform.Inform;
 import geniusweb.inform.Settings;
 import geniusweb.inform.YourTurn;
 import geniusweb.issuevalue.Bid;
+import geniusweb.issuevalue.DiscreteValue;
+import geniusweb.issuevalue.Domain;
+import geniusweb.issuevalue.NumberValue;
+import geniusweb.issuevalue.Value;
+import geniusweb.issuevalue.ValueSet;
 import geniusweb.party.Capabilities;
 import geniusweb.party.DefaultParty;
 import geniusweb.profile.Profile;
@@ -34,12 +44,13 @@ import geniusweb.profile.utilityspace.UtilitySpace;
 import geniusweb.profileconnection.ProfileConnectionFactory;
 import geniusweb.profileconnection.ProfileInterface;
 import geniusweb.progress.Progress;
+import geniusweb.progress.ProgressRounds;
 import geniusweb.references.Parameters;
 import tudelft.utilities.logging.Reporter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class LearningAgent extends DefaultParty {
+public class LearningAgent extends DefaultParty { // TODO: change name
 
     private Bid lastReceivedBid = null;
     private PartyId me;
@@ -49,16 +60,26 @@ public class LearningAgent extends DefaultParty {
     private String protocol;
     private Parameters parameters;
     private UtilitySpace utilitySpace;
+    private Domain domain;
     private PersistentState persistentState;
     private NegotiationData negotiationData;
     private List<File> dataPaths;
     private File persistentPath;
     private String opponentName;
+    // Expecting Lower Limit of Concession Function behavior
+    // The idea here that we will keep for a negotiation scenario the most frequent 
+    // Issues-Values, afterwards, as a counter offer bid for each issue we will select the most frequent value.
+    private HashMap<IssueValKey,Integer> issueValFreqs;
+    
+    //Best bid for agent, exists if bid space is small enough to search in
+    private final BigInteger MAX_SEARCHABLE_BIDSPACE = BigInteger.valueOf(50000);
+    private Bid optimalBid = null;
+    private AllBidsList allBidList;
 
-    public LearningAgent() {
+    public LearningAgent() { // TODO: change name
     }
 
-    public LearningAgent(Reporter reporter) {
+    public LearningAgent(Reporter reporter) { // TODO: change name
         super(reporter); // for debugging
     }
 
@@ -90,6 +111,7 @@ public class LearningAgent extends DefaultParty {
                 // Parameters for the agent (can be passed through the GeniusWeb GUI, or a
                 // JSON-file)
                 this.parameters = settings.getParameters();
+                
 
                 // The PersistentState is loaded here (see 'PersistenData,java')
                 if (this.parameters.containsKey("persistentstate"))
@@ -128,15 +150,101 @@ public class LearningAgent extends DefaultParty {
                     try {
                         this.profileint = ProfileConnectionFactory.create(settings.getProfile().getURI(),
                                 getReporter());
+                        domain = this.profileint.getProfile().getDomain();
+                        // Create a Issues-Values frequency map
+                        if(issueValFreqs == null) {
+                        	// Map wasn't created before, create a new instance now
+                        	issueValFreqs = new HashMap<IssueValKey,Integer>();
+                        } 
+                        else
+                        	// Map was created before, but this is a new negotiation scenario, clear the old map.
+                        	issueValFreqs.clear();
+                        
+                        // Obtain all of the issues in the current negotiation domain
+                        Set<String> issues = domain.getIssues();
+                        for (String s : issues) {
+                        	  // Obtain all of the values for an issue "s"
+                        	  ValueSet vs = domain.getValues(s);
+                        	  for(Value v : vs) {
+                        		  // Add a new entry in the frequency map for each (s,v,typeof(v)) 
+                        		  // where typeof(v) is the value type of v (either DiscreteValue or Numeric) 
+                        		  IssueValKey ivk = new IssueValKey();
+                        		  ivk.issue = s;
+                        		  if(v instanceof DiscreteValue) {
+                        			  ivk.value_type = 0;
+                        			  ivk.value = ((DiscreteValue)v).getValue();
+                        		  } else if (v instanceof NumberValue) {
+                        			  ivk.value_type = 1;
+                        			  ivk.value = ((NumberValue)v).getValue().toPlainString();
+                        		  }
+                        		  issueValFreqs.put(ivk, 0);
+                        	  }
+                        	
+                        }  
                         this.utilitySpace = ((UtilitySpace) profileint.getProfile());
+                        allBidList = new AllBidsList(domain);
+                        
+                        // Attempt to find the optimal bid in a search-able bid space, if bid space size is small/equal to MAX_SEARCHABLE_BIDSPACE
+                        int r = allBidList.size().compareTo(MAX_SEARCHABLE_BIDSPACE);
+                        if(r == -1 || r == 0) {
+                        	BigDecimal mx_util = new BigDecimal(0);
+                        	int bidspace_size = allBidList.size().intValue();
+                        	System.out.println("Searching for optimal bid in " + bidspace_size + " possible bids");
+                        	for(int i = 0; i < bidspace_size;++i) {
+                        		Bid b = allBidList.get(i);
+                        		BigDecimal canidate = utilitySpace.getUtility(b);
+                        		r = canidate.compareTo(mx_util);
+                        		if(r == 1) {
+                        			mx_util = canidate;
+                        			optimalBid = b;
+                        		}
+                        	}
+                        	System.out.println("agent has optimal bid with utility of " + mx_util.doubleValue());
+                        } else {
+                        	System.out.println("Searching for best bid in random subspace of possible bids, result might be sub-optimal");
+                        	BigDecimal mx_util = new BigDecimal(0);
+                        	// Iterate randomly through list of bids until we find a good bid
+        					for (int attempt = 0; attempt < MAX_SEARCHABLE_BIDSPACE.intValue(); attempt++) {
+        						long i = random.nextInt(allBidList.size().intValue());
+        						Bid b = allBidList.get(BigInteger.valueOf(i));
+        						BigDecimal canidate = utilitySpace.getUtility(b);
+                        		r = canidate.compareTo(mx_util);
+                        		if(r == 1) {
+                        			mx_util = canidate;
+                        			optimalBid = b;
+                        		}
+        					}
+                        	System.out.println("agent has best (perhaps sub optimal) bid with utility of " + mx_util.doubleValue());
+                        }
                     } catch (IOException e) {
                         throw new IllegalStateException(e);
                     }
                 }
             } else if (info instanceof ActionDone) {
-                // The info object is an action that is performed by the opponent.
-                processAction(((ActionDone) info).getAction());
+                // The info object is an action that is performed by an agent.
+                Action action = ((ActionDone) info).getAction();
+
+                // Check if this is not our own action
+                if (!this.me.equals(action.getActor())) {
+                    // Check if we already know who we are playing against.
+                    if (this.opponentName == null) {
+                        // The part behind the last _ is always changing, so we must cut it off.
+                        String fullOpponentName = action.getActor().getName();
+                        int index = fullOpponentName.lastIndexOf("_");
+                        this.opponentName = fullOpponentName.substring(0, index);
+
+                        // Add name of the opponent to the negotiation data
+                        this.negotiationData.setOpponentName(this.opponentName);
+                    }
+                    // Process the action of the opponent.
+                    processAction(action);
+                }
             } else if (info instanceof YourTurn) {
+                // Advance the round number if a round-based deadline is set.
+                if (progress instanceof ProgressRounds) {
+                    progress = ((ProgressRounds) progress).advance();
+                }
+
                 // The info notifies us that it is our turn
                 myTurn();
             } else if (info instanceof Finished) {
@@ -186,6 +294,66 @@ public class LearningAgent extends DefaultParty {
      * Everything below this comment is most relevant for the ANL competition.
      * **********************************************************************
      */
+    
+    private boolean isNearNegotiationEnd() {
+    	 Boolean nearDeadline = progress.get(System.currentTimeMillis()) > 0.95;
+    	 return nearDeadline;
+    }
+    /**
+     *  Method: createBid
+     *  Description: This function creates a bid based on a given issue values frequency map
+     *  Input: p_issueValFreqs - a copy of the issue values frequency map
+     *  Output: a new bid, such that for each issue s from that domain the matching value v is the most frequent in the negotiation scenario
+     * */
+	private Bid createBid(HashMap<IssueValKey, Integer> issueValFreqs_cpy) {
+		// A new issuemap to create the Bid by
+		Map<String, Value> issuemap = new HashMap<String, Value>();
+		
+		Set<String> issues = domain.getIssues();
+		for (String s : issues) {
+			// For issue "s" in the domain:
+			
+			// Create a list such that each element contains for an issue: value, value type and frequency of that value
+			// In the current negotiation scenario
+			List<IssueValueFreqElement> ls = IssueValKey.createValueFreqList(issueValFreqs_cpy, s);
+			
+			if (ls.size() > 0) {
+				// If such a list contains values, then, we will search the value of which the frequency is maximal
+				
+				int max_freq = -1;
+				int max_value_type = -1;
+				String max_freq_value = "";
+				
+				// Searching for a maximal frequency value for issue "s"
+				for (IssueValueFreqElement ele : ls) {
+					Integer freq = ele.freq;
+					if (freq > max_freq) {
+						max_freq_value = ele.value;
+						max_value_type = ele.value_type;
+						max_freq = freq;
+
+					}
+				}
+				Value v;
+				if (max_value_type == 0) {
+					v = new DiscreteValue(max_freq_value);
+				} else if (max_value_type == 1) {
+					v = new NumberValue(max_freq_value);
+				} else
+					throw new RuntimeException("Unknown Value type detected");
+				// Remove the selected issue and value from the current copy of the frequency map
+				IssueValKey ivk = new IssueValKey();
+				ivk.issue = s;
+				ivk.value = max_freq_value;
+				issueValFreqs_cpy.remove(ivk);
+				
+				// Add to the issue map, the issue s, with the found maximal frequency v 
+				issuemap.put(s, v);
+			}
+
+		}
+		return new Bid(issuemap);
+	}
 
     /** Provide a description of the agent */
     @Override
@@ -199,17 +367,31 @@ public class LearningAgent extends DefaultParty {
      * @param action
      */
     private void processAction(Action action) {
-        // Check if we already know who we are playing against
-        if (this.opponentName == null) {
-            this.opponentName = action.getActor().getName();
-            // Add name of the opponent to the negotiation data
-            this.negotiationData.setOpponentName(this.opponentName);
-        }
         if (action instanceof Offer) {
-            // If the action was an offer: Obtain the bid and add it's value to our
-            // negotiation data.
+        	//If the action was an offer: Obtain the bid 
             this.lastReceivedBid = ((Offer) action).getBid();
-            this.negotiationData.addBidUtil(this.utilitySpace.getUtility(this.lastReceivedBid).doubleValue());
+            
+            //Update the IssueValue-Frequency Map
+            Map<String,Value> m = this.lastReceivedBid.getIssueValues();
+            for (Map.Entry<String,Value> entry : m.entrySet()) {
+            	  IssueValKey ivk = new IssueValKey();
+            	  ivk.issue = entry.getKey();
+            	  Value v = entry.getValue();
+            	  if(v instanceof DiscreteValue) {
+        			  ivk.value_type = 0;
+        			  ivk.value = ((DiscreteValue)v).getValue();
+        		  } else if (v instanceof NumberValue) {
+        			  ivk.value_type = 1;
+        			  ivk.value = ((NumberValue)v).getValue().toPlainString();
+        		  }
+            	  Integer freq = issueValFreqs.get(ivk);
+            	  ++freq;
+            	  issueValFreqs.put(ivk, freq);
+            	  //System.out.println("(" + ivk.issue + "," + ivk.value + ") = " + freq);
+            }
+            //add it's value to our negotiation data.
+            double utilVal = this.utilitySpace.getUtility(this.lastReceivedBid).doubleValue();
+            this.negotiationData.addBidUtil(utilVal);
         }
     }
 
@@ -227,6 +409,7 @@ public class LearningAgent extends DefaultParty {
             Bid agreement = agreements.getMap().values().iterator().next();
             this.negotiationData.addAgreementUtil(this.utilitySpace.getUtility(agreement).doubleValue());
         }
+       
     }
 
     /**
@@ -238,18 +421,42 @@ public class LearningAgent extends DefaultParty {
             // If the last received bid is good: create Accept action
             action = new Accept(me, lastReceivedBid);
         } else {
-            // Obtain ist of all bids
-            AllBidsList bidspace = new AllBidsList(this.utilitySpace.getDomain());
-            Bid bid = null;
+			Bid bid = null;
+			if (!isNearNegotiationEnd()) {
+				bid = optimalBid;
+			}
+			// Find a "good" counter bid
+			if (bid == null) {
+				int attempt = 0;
+				// Create a copy of the current issue values frequency map
+				HashMap<IssueValKey, Integer> issueValFreqs_cpy = IssueValKey.cloneIssueValMap(issueValFreqs);
 
-            // Iterate randomly through list of bids until we find a good bid
-            for (int attempt = 0; attempt < 30 && !isGood(bid); attempt++) {
-                long i = random.nextInt(bidspace.size().intValue());
-                bid = bidspace.get(BigInteger.valueOf(i));
-            }
+				// Try to find a "good" bid, until either the copy of the issue values frequency
+				// map is empty
+				// Or enough attempts have failed.
+				while (attempt < 500 && issueValFreqs_cpy.size() > 0) {
 
-            // Create offer action
-            action = new Offer(me, bid);
+					bid = createBid(issueValFreqs_cpy);
+					if (isGood(bid))
+						break;
+					else
+						bid = null;
+					attempt++;
+				}
+
+				if (bid == null) {
+					// Iterate randomly through list of bids until we find a good bid
+					for (attempt = 0; attempt < 5000 && !isGood(bid); attempt++) {
+						long i = random.nextInt(allBidList.size().intValue());
+						bid = allBidList.get(BigInteger.valueOf(i));
+						// System.out.println("My utility for oppenent prefered bid is: " +
+						// this.utilitySpace.getUtility(bid).doubleValue());
+					}
+				}
+			}
+
+			// Create offer action
+			action = new Offer(me, bid);
         }
 
         // Send action
@@ -265,21 +472,25 @@ public class LearningAgent extends DefaultParty {
     private boolean isGood(Bid bid) {
         if (bid == null)
             return false;
-
+        if(!isNearNegotiationEnd()) {
+        	if(optimalBid != null) {
+        		return this.utilitySpace.getUtility(bid).doubleValue() >= this.utilitySpace.getUtility(optimalBid).doubleValue();
+        	}
+        }
         // Check if we already know the opponent
-        if (this.persistentState.knownOpponent(this.opponentName)) {
+       /* if (this.persistentState.knownOpponent(this.opponentName)) {
             // Obtain the average of the max utility that the opponent has offered us in
             // previous negotiations.
             Double avgMaxUtility = this.persistentState.getAvgMaxUtility(this.opponentName);
 
             // Request 5% more than the average max utility offered by the opponent.
             return this.utilitySpace.getUtility(bid).doubleValue() > (avgMaxUtility * 1.05);
-        }
+        }*/
 
         // Check a simple business rule
-        Boolean nearDeadline = progress.get(System.currentTimeMillis()) > 0.95;
-        Boolean acceptable = this.utilitySpace.getUtility(bid).doubleValue() > 0.7;
-        Boolean good = this.utilitySpace.getUtility(bid).doubleValue() > 0.95;
+        Boolean nearDeadline = isNearNegotiationEnd();
+        Boolean acceptable = this.utilitySpace.getUtility(bid).doubleValue() > 0.9;
+        Boolean good = this.utilitySpace.getUtility(bid).doubleValue() > 0.92;
         return (nearDeadline && acceptable) || good;
     }
 
