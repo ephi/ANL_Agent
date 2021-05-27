@@ -1,0 +1,455 @@
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_1]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_2]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_3]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_1]}
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_2]}
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/fitness/fitness2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_4]}
+- learn:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_1, learningagent_p2_session_2, learningagent_p2_session_3, learningagent_p2_session_4]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_5]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_6]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_3]}
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_4]}
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- learn:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_1, learningagent_session_2, learningagent_session_3, learningagent_session_4]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/flightbooking/flightbooking2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_7]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_8]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_9]}
+- learn:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_5, learningagent_p2_session_6, learningagent_p2_session_7, learningagent_p2_session_8, learningagent_p2_session_9]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_5]}
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_6]}
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/japantrip/japantrip2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_10]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/boulware-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_11]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/conceder-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+      parameters: {persistentstate: learningagent_p2_state, negotiationdata: [learningagent_p2_session_12]}
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/hardliner-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_7]}
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/learningagent-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+      parameters: {persistentstate: learningagent_state, negotiationdata: [learningagent_session_8]}
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
+- negotiation:
+    deadline: 2
+    parties:
+    - party: parties/linear-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs1.json
+    - party: parties/randomparty-1.6.0-jar-with-dependencies.jar
+      profile: profiles/jobs/jobs2.json
