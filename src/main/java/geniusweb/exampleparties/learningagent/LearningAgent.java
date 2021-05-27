@@ -225,7 +225,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
                 Action action = ((ActionDone) info).getAction();
 
                 // Check if this is not our own action
-                if (!this.me.equals(action.getActor())) {
+                if (this.me != null && !this.me.equals(action.getActor())) {
                     // Check if we already know who we are playing against.
                     if (this.opponentName == null) {
                         // The part behind the last _ is always changing, so we must cut it off.
