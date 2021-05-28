@@ -54,7 +54,7 @@ def ANL_Build_Learn_Session(deadline, learning_session_cntr, learning_session_le
     return None
 
 
-def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", negotiation_deadline=2):
+def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", negotiation_deadline=3):
     parties_path = docker_path + "\\parties"
     profile_path = docker_path + "\\profiles"
     parties_files = glob.glob(parties_path + '\\*.jar')
@@ -64,10 +64,13 @@ def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", neg
 
     p2_learning_session_cntr = 1
     p2_learning_session_learn_cntr = 1
+
+    total_scenarios_cnt = 0
     with open('settings.yml', 'w') as writer:
         for k, prof_path in enumerate(profile_paths):
             profile_files = glob.glob(prof_path + '\\*[0-9].json', recursive=False)
             if len(profile_files) == 0:
+                print("invalid prof path: " + prof_path +"\n")
                 continue
             prof_name = os.path.basename(profile_files[0])
             prof_path_0 = "profiles/" + prof_path.split('\\')[-1] + "/" + prof_name
@@ -79,7 +82,7 @@ def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", neg
                 p1_name = p1_name[0: p1_name.find("-"): 1]
                 p1_path_name = "parties/" + os.path.basename(p1)
                 for j, p2 in enumerate(parties_files):
-                    if i < j:
+                    if i != j:
                         p2_path_name = "parties/" + os.path.basename(p2)
                         p2_name = ntpath.basename(p2)
                         p2_name = p2_name[0: p2_name.find("-"): 1]
@@ -98,7 +101,7 @@ def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", neg
                         neg_str = ANL_Build_Docker_Negotiation(negotiation_deadline, negotiation_info)
                         writer.write(neg_str)
                         print(neg_str)
-                        learn_str, learning_cntr_update = ANL_Build_Learn_Session(negotiation_deadline,
+                        learn_str, learning_cntr_update = ANL_Build_Learn_Session(60,
                                                                                      p1_learning_session_cntr,
                                                                                      p1_learning_session_learn_cntr,
                                                                                      p1_name, p1_path_name) or (None, None)
@@ -108,7 +111,7 @@ def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", neg
                             print(learn_str)
 
 
-                        learn_str, learning_cntr_update = ANL_Build_Learn_Session(negotiation_deadline,
+                        learn_str, learning_cntr_update = ANL_Build_Learn_Session(60,
                                                                                      p2_learning_session_cntr,
                                                                                      p2_learning_session_learn_cntr,
                                                                                      p2_name, p2_path_name,True) or (None, None)
@@ -116,6 +119,8 @@ def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", neg
                             p2_learning_session_learn_cntr = learning_cntr_update
                             writer.write(learn_str)
                             print(learn_str)
+                        total_scenarios_cnt += 1
+    print(total_scenarios_cnt)
 
 
 def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=False):
@@ -127,6 +132,7 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
             ul = {}
         with open(f_p) as f:
             neg_file_dict = json.load(f)
+            had_acceptence = False
             for action in neg_file_dict["SAOPState"]["actions"]:
                 if show_all:
                     if "offer" in action:
@@ -138,6 +144,7 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
                                 ul[key] = [val]
                 if "accept" in action:
                     utils = action["accept"]["utilities"]
+                    had_acceptence = True
                     for key, val in utils.items():
                         if show_all:
                             if key in ul:
@@ -148,6 +155,13 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
                             aul[key].append(val)
                         else:
                             aul[key] = [val]
+            if not had_acceptence:
+                utils = neg_file_dict["SAOPState"]["actions"][0]["offer"]["utilities"]
+                for key, val in utils.items():
+                    if key in aul:
+                        aul[key].append(0)
+                    else:
+                        aul[key] = [0]
         if show_all:
             for key, val in ul.items():
                 m = regex.search(key)
@@ -161,6 +175,9 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
     for key, val in aul.items():
         m = regex.search(key)
         np_val = np.array(val)
+        print("key: " + key + ", number of negotation results: " + str(len(np_val)) + "\n")
+        print(np_val)
+        print("\n")
         a_aul[key] = np.average(np_val)
         plt.plot(np_val, label=m.group())
     plt.legend(loc='upper left', borderaxespad=0.)
