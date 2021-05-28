@@ -4,7 +4,6 @@ import os
 
 import numpy as np
 import matplotlib.pyplot as plt
-import re
 import ntpath
 
 
@@ -126,7 +125,6 @@ def ANL_Build_Docker_Settings(docker_path="C:\\DEV\\Java\ANL\\DockerRunner", neg
 def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=False):
     aul = {}
     neg_files = glob.glob(anl_res_path + '/*_negotiation.json')
-    regex = re.compile(r'([A-Z])\w+')
     for f_p in neg_files:
         if show_all:
             ul = {}
@@ -138,6 +136,7 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
                     if "offer" in action:
                         utils = action["offer"]["utilities"]
                         for key, val in utils.items():
+                            key = "_".join(key.split('_')[:-2])
                             if key in ul:
                                 ul[key].append(val)
                             else:
@@ -146,6 +145,7 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
                     utils = action["accept"]["utilities"]
                     had_acceptence = True
                     for key, val in utils.items():
+                        key = "_".join(key.split('_')[:-2])
                         if show_all:
                             if key in ul:
                                 ul[key].append(val)
@@ -158,13 +158,13 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
             if not had_acceptence:
                 utils = neg_file_dict["SAOPState"]["actions"][0]["offer"]["utilities"]
                 for key, val in utils.items():
+                    key = "_".join(key.split('_')[:-2])
                     if key in aul:
                         aul[key].append(0)
                     else:
                         aul[key] = [0]
         if show_all:
             for key, val in ul.items():
-                m = regex.search(key)
                 plt.plot(np.array(val), label=m.group())
             plt.legend(loc='upper left', borderaxespad=0.)
             plt.ylabel("Util")
@@ -173,13 +173,12 @@ def ANL_Analyzer(anl_res_path='C:/DEV/Java/ANL/DockerRunner/results', show_all=F
             plt.show()
     a_aul = {}
     for key, val in aul.items():
-        m = regex.search(key)
         np_val = np.array(val)
         print("key: " + key + ", number of negotation results: " + str(len(np_val)) + "\n")
         print(np_val)
         print("\n")
         a_aul[key] = np.average(np_val)
-        plt.plot(np_val, label=m.group())
+        plt.plot(np_val, label=key)
     plt.legend(loc='upper left', borderaxespad=0.)
     plt.ylabel("Accepted Utils")
     plt.title("Accepted Utils in all negotiations")
