@@ -12,3 +12,10 @@ An agent for ANL 2021
 1) Nothing very interesting, keeps track about the oppenent name, best util we ever got from him and the util agreed upon at the end of a negotiation
 # Analyzing the agent performance
 download main.py script, call ANL_Analyzer function with a path to the folder which contrains the results ( .json files ) of a tournament given by the docker version found at https://github.com/brenting/ANL-2021-docker-runner running the script with show_all=True will display information of each negotiation in the tournament, that is, the utiltiy history of the offers over the turns and the last turn indicates the accepted offer (if accepted), afterwards, plot of every accepted utiltiy is displayed for all participants and the average utility is for each agent is printed in descending order 
+
+# Offline Learning
+1) Profile the opponent: utility threshold
+2) Profile the competition - learn about most of agents in the competition (thresholds)
+3) [Remember that the threshold may be time-variant]
+4) -> Thresholds in isGood, isOpGood, time between phase 2&3
+5) Scan the bids of the opponent and calculate the utility over time
