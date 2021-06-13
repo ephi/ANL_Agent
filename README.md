@@ -19,3 +19,12 @@ download main.py script, call ANL_Analyzer function with a path to the folder wh
 3) [Remember that the threshold may be time-variant]
 4) -> Thresholds in isGood, isOpGood, time between phase 2&3
 5) Scan the bids of the opponent and calculate the utility over time
+
+# Threshold Determining:
+1) What the opponent agent thinks about each bid -> profile the opponent
+
+
+## Paremters to Determine (offline):
+1) Our threshold (maybe over time) -> V_max - delta(V)*e^(-lambda*t/t0) where V_max is p*optimal_bid, delta(V) = V_max - (avg(accepted bids) - 1*std(accepted bids)), over all agents in the comptition
+2) Opponent threshold -> f*avg(accepted bids of this opponent)
+3) Classify opponents into 3 types, {1 - hardliner}, {2 - normal}, {3 - consider}, determine lambda based on these types
