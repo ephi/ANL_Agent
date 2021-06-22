@@ -25,6 +25,6 @@ download main.py script, call ANL_Analyzer function with a path to the folder wh
 
 
 ## Paremters to Determine (offline):
-1) Our threshold (maybe over time) -> V_max - delta(V)*e^(-lambda*t/t0) where V_max is p*optimal_bid, delta(V) = V_max - (avg(accepted bids) - 1*std(accepted bids)), over all agents in the comptition
-2) Opponent threshold -> f*avg(accepted bids of this opponent)
+1) DONE // Our threshold (maybe over time) -> V_max - delta(V)*e^(-lambda*t/t0) where V_max is p*optimal_bid, delta(V) = V_max - (avg(accepted bids) - 1*std(accepted bids)), over all agents in the comptition
+2) DONE // Opponent threshold -> f*avg(accepted bids of this opponent)
 3) Classify opponents into 3 types, {1 - hardliner}, {2 - normal}, {3 - consider}, determine lambda based on these types
