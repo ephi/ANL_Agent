@@ -16,6 +16,9 @@ public class NegotiationData {
     private Double maxReceivedUtil = 0.0;
     private Double agreementUtil = 0.0;
     private String opponentName;
+    
+    // Yair added
+    private Double opponentUtil = 0.0;
 
     public void addAgreementUtil(Double agreementUtil) {
         this.agreementUtil = agreementUtil;
@@ -32,6 +35,10 @@ public class NegotiationData {
         this.opponentName = opponentName;
     }
 
+    public void setOpponentUtil(Double oppUtil) {
+    	this.opponentUtil = oppUtil;
+    }
+    
     public String getOpponentName() {
         return this.opponentName;
     }
@@ -42,5 +49,9 @@ public class NegotiationData {
 
     public Double getAgreementUtil() {
         return this.agreementUtil;
+    }
+    
+    public Double getOpponentUtil() {
+    	return this.opponentUtil;
     }
 }

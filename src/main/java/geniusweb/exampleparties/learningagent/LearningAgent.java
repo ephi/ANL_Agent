@@ -74,13 +74,23 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	// Expecting Lower Limit of Concession Function behavior
 	// The idea here that we will keep for a negotiation scenario the most frequent 
 	// Issues-Values, afterwards, as a counter offer bid for each issue we will select the most frequent value.
-//	private HashMap<IssueValKey,Integer> issueValFreqs;
 	private HashMap<String, Pair> freqMap;
-
+	
+	// Average and standard deviation of the competition for determine "good" utility threshold
+	private double avgUtil = 0.95;
+	private double stdUtil = 0.1;
+	private double opAvgUtil = 0.0;
+	private double utilThreshold = 0.95;
+	
+	// TODO: remove after debugging
+	private int counter = 0;
+	private int optimalBidCounter = 0;
+	
 	//Best bid for agent, exists if bid space is small enough to search in
 	private final BigInteger MAX_SEARCHABLE_BIDSPACE = BigInteger.valueOf(50000);
 	private Bid optimalBid = null;
 	private AllBidsList allBidList;
+	
 
 	public LearningAgent() { // TODO: change name
 	}
@@ -126,6 +136,8 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 				if (this.persistentPath != null && this.persistentPath.exists()) {
 					ObjectMapper objectMapper = new ObjectMapper();
 					this.persistentState = objectMapper.readValue(this.persistentPath, PersistentState.class);
+					this.avgUtil = this.persistentState.getAvgUtility();
+					this.stdUtil = this.persistentState.getStdUtility();					
 				} else {
 					this.persistentState = new PersistentState();
 				}
@@ -242,6 +254,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 
 						// Add name of the opponent to the negotiation data
 						this.negotiationData.setOpponentName(this.opponentName);
+						this.opAvgUtil = this.persistentState.getOpUtility(this.opponentName);
 					}
 					// Process the action of the opponent.
 					processAction(action);
@@ -381,28 +394,15 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 		if (action instanceof Offer) {
 			//If the action was an offer: Obtain the bid 
 			this.lastReceivedBid = ((Offer) action).getBid();
-
-//			//Update the IssueValue-Frequency Map
-//			Map<String,Value> m = this.lastReceivedBid.getIssueValues();
-//			for (Map.Entry<String,Value> entry : m.entrySet()) {
-//				IssueValKey ivk = new IssueValKey();
-//				ivk.issue = entry.getKey();
-//				Value v = entry.getValue();
-//				if(v instanceof DiscreteValue) {
-//					ivk.value_type = 0;
-//					ivk.value = ((DiscreteValue)v).getValue();
-//				} else if (v instanceof NumberValue) {
-//					ivk.value_type = 1;
-//					ivk.value = ((NumberValue)v).getValue().toPlainString();
-//				}
-//				Integer freq = issueValFreqs.get(ivk);
-//				++freq;
-//				issueValFreqs.put(ivk, freq);
-//				//System.out.println("(" + ivk.issue + "," + ivk.value + ") = " + freq);
-//			}
+			updateFreqMap(lastReceivedBid);
+			
 			//add it's value to our negotiation data.
 			double utilVal = this.utilitySpace.getUtility(this.lastReceivedBid).doubleValue();
 			this.negotiationData.addBidUtil(utilVal);
+			
+//			if (this.counter > 500) {
+//				System.out.print(false);
+			
 		}
 	}
 
@@ -419,7 +419,16 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			// Get the bid that is agreed upon and add it's value to our negotiation data
 			Bid agreement = agreements.getMap().values().iterator().next();
 			this.negotiationData.addAgreementUtil(this.utilitySpace.getUtility(agreement).doubleValue());
+			this.negotiationData.setOpponentUtil(this.calcOpValue(agreement));
+			
+			System.out.println("MY OWN THRESHOLD: " + this.utilThreshold);
+			System.out.println("MY OWN UTIL: " + this.utilitySpace.getUtility(agreement).doubleValue());
+			System.out.println("EXP OPPONENT UTIL: " + this.calcOpValue(agreement));
+			System.out.println("OFFERS: " + this.counter + " OPTIMAL BID: " + this.optimalBidCounter);
+
 		}
+		else
+			System.out.println("!!!!!!!!!!!!!! NO AGREEMENT !!!!!!!!!!!!!!! /// MY THRESHOLD: " + this.utilThreshold);
 
 	}
 
@@ -432,13 +441,13 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			// If the last received bid is good: create Accept action
 			action = new Accept(me, lastReceivedBid);
 		} else {
-			updateFreqMap(lastReceivedBid); // TODO: move to process action
+			
 
 			// there are 3 phases in the negotiation process:
 			// 1. Send random bids that considered to be GOOD for our agent
 			// 2. Send random bids that considered to be GOOD for both of the agents
 			// 3. Near negotiation end - accept lower offers (degraded threshold)
-			Bid bid = optimalBid;
+			Bid bid = null;
 			
 			switch (isNearNegotiationEnd()) {
 			case 0:
@@ -448,6 +457,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 					// System.out.println("My utility for opponent preferred bid is: " +
 					// this.utilitySpace.getUtility(bid).doubleValue());
 				}
+//				System.out.println("My utility from bid: " + this.utilitySpace.getUtility(bid).doubleValue() + " Thershold: " + this.utilThreshold);
 				bid = (isGood(bid)) ? bid : optimalBid;  // if the last bid isn't good, offer (default) the optimal bid
 				break;
 			
@@ -459,6 +469,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 					// System.out.println("My utility for opponent preferred bid is: " +
 					// this.utilitySpace.getUtility(bid).doubleValue());
 				}
+//				System.out.println("Utility bid: " + this.utilitySpace.getUtility(bid).doubleValue() + " Thershold: " + this.utilThreshold);
 				bid = (isGood(bid) && isOpGood(bid)) ? bid : optimalBid;  // if the last bid isn't good, offer (default) the optimal bid
 				break;
 			}
@@ -493,9 +504,16 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 
 			// Create offer action
 			action = new Offer(me, bid);
+			this.counter++;
+			if (bid == this.optimalBid) {
+				this.optimalBidCounter++;
+			}
+			
 		}
 
 		// Send action
+
+		
 		getConnection().send(action);
 	}
 
@@ -508,11 +526,13 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	private boolean isGood(Bid bid) {
 		if (bid == null)
 			return false;
-		if(isNearNegotiationEnd() < 2) {
-			if(optimalBid != null) {
-				return this.utilitySpace.getUtility(bid).doubleValue() >= this.utilitySpace.getUtility(optimalBid).doubleValue() * 0.9;
-			}
-		}
+//		if(isNearNegotiationEnd() < 3) {
+		double maxVlue = (optimalBid != null) ? this.utilitySpace.getUtility(optimalBid).doubleValue() : 1.0;
+		double avgMaxUtility = this.persistentState.knownOpponent(this.opponentName) ? this.persistentState.getAvgMaxUtility(this.opponentName) : this.avgUtil; 
+
+		this.utilThreshold = maxVlue - (0.6*maxVlue + 0.4*avgMaxUtility - this.avgUtil + 1*this.stdUtil)*(Math.exp(progress.get(System.currentTimeMillis())-1))/(Math.E - 1);
+		return this.utilitySpace.getUtility(bid).doubleValue() >= this.utilThreshold;
+//		}
 		// Check if we already know the opponent
 		/* if (this.persistentState.knownOpponent(this.opponentName)) {
             // Obtain the average of the max utility that the opponent has offered us in
@@ -524,10 +544,10 @@ public class LearningAgent extends DefaultParty { // TODO: change name
         }*/
 
 		// Check a simple business rule
-		Boolean nearDeadline = isNearNegotiationEnd() == 2;
-		Boolean acceptable = this.utilitySpace.getUtility(bid).doubleValue() > 0.9;
-		Boolean good = this.utilitySpace.getUtility(bid).doubleValue() > 0.92;
-		return (nearDeadline && acceptable) || good;
+//		Boolean nearDeadline = isNearNegotiationEnd() == 2;
+//		Boolean acceptable = this.utilitySpace.getUtility(bid).doubleValue() > 0.9;
+//		Boolean good = this.utilitySpace.getUtility(bid).doubleValue() > 0.92;
+//		return (nearDeadline && acceptable) || good;
 	}
 	
 	private void updateFreqMap(Bid bid) {
@@ -540,11 +560,6 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 
 				String vs = valueToStr(v, p);
 				p.vList.put(vs, p.vList.get(vs)+1);
-				//			for (IssueValueFreqElement i : vl.keySet()) {
-				//				if (i.value.equals(v_str)) {
-				//					vl.put(i, vl.get(i)+1);
-				//				}
-				//			}
 			}
 		}
 	}
@@ -564,28 +579,21 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			
 			// calculate utility of value (in the issue)
 			int sumOfValues = 0;
-//			int bidElement = -1;
+			int maxValue = 1;
 			for (String vString : p.vList.keySet()) {
 				sumOfValues += p.vList.get(vString);
+				maxValue = Math.max(maxValue, p.vList.get(vString)); 
 				// TODO: find the highest frequency of value
-				
-//				// save the frequency of the value in the bid
-//				if (v instanceof DiscreteValue) {
-//					if (((DiscreteValue)v).getValue().equals(i.value))
-//						bidElement = vl.get(i);
-//				} else if (v instanceof NumberValue) {
-//					if (((NumberValue)v).getValue().toPlainString().equals(i.value))
-//						bidElement = vl.get(i);
-//				}
 			}
 			// calculate estimated utility of the issuevalue
-			valUtil[k] = (float)p.vList.get(vs)/sumOfValues;
+//			valUtil[k] = (float)p.vList.get(vs)/sumOfValues;
+			valUtil[k] = (float)p.vList.get(vs)/maxValue;
 			
 			// calculate the inverse std deviation of the array
 			double mean = (float)sumOfValues/p.vList.size();
 			for (String vString : p.vList.keySet())
 				issWeght[k] += Math.pow(p.vList.get(vString) - mean, 2);
-			issWeght[k] = 1.0/(issWeght[k]+0.1);
+			issWeght[k] = 1.0/Math.sqrt((issWeght[k]+0.1)/p.vList.size());
 			
 			k++;
 		}
@@ -604,7 +612,8 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			return false;
 		
 		double value = calcOpValue(bid);
-		return (value > 0.6); 
+		double opThreshold = this.opAvgUtil != 0 ? 0.8*this.opAvgUtil : 0.6; // default value 
+		return (value > opThreshold); 
 	}
 	
 	private String valueToStr(Value v, Pair p) {
