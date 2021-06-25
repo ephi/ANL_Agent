@@ -1,5 +1,8 @@
 package geniusweb.exampleparties.learningagent; // TODO: change name
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
@@ -12,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
 public class NegotiationData {
+	private static final int tSplit = 40; // TODO: import from learning agent
 
     private Double maxReceivedUtil = 0.0;
     private Double agreementUtil = 0.0;
@@ -19,6 +23,8 @@ public class NegotiationData {
     
     // Yair added
     private Double opponentUtil = 0.0;
+    private Double[] opponentUtilByTime = new Double[tSplit];
+//    private List<Double> opponentOfferTimes = new ArrayList<Double>();
 
     public void addAgreementUtil(Double agreementUtil) {
         this.agreementUtil = agreementUtil;
@@ -29,6 +35,12 @@ public class NegotiationData {
     public void addBidUtil(Double bidUtil) {
         if (bidUtil > maxReceivedUtil)
             this.maxReceivedUtil = bidUtil;
+    }
+    
+    public void updateOpponentOffers(double[] opSum, int[] opCounts) {
+    	for (int i=0; i < tSplit; i++) {
+			this.opponentUtilByTime[i] = (opCounts[i] > 0) ? opSum[i]/opCounts[i] : 0.0;
+    	}
     }
 
     public void setOpponentName(String opponentName) {
@@ -54,4 +66,13 @@ public class NegotiationData {
     public Double getOpponentUtil() {
     	return this.opponentUtil;
     }
+    
+    public Double[] getOpponentUtilByTime() {
+    	return this.opponentUtilByTime;
+    }
+//    
+//    public List<Double> getOpponentOfferTimes() {
+//    	return this.opponentOfferTimes;
+//    }
+    
 }

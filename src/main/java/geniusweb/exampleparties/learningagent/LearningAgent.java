@@ -82,9 +82,14 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	private double opAvgUtil = 0.0;
 	private double utilThreshold = 0.95;
 	
-	// TODO: remove after debugging
-	private int counter = 0;
-	private int optimalBidCounter = 0;
+	// estimate opponent time-variant threshold function
+	private static final int tSplit = 40;
+	private int[] opCounter = new int[tSplit];
+	private double[] opSum = new double[tSplit];
+	
+	// agent has 2-phases - learning of the opponent and offering bids while considering opponent utility, this constant define the threshold between those two phases
+	private static final double tPhase = 0.33;
+	
 	
 	//Best bid for agent, exists if bid space is small enough to search in
 	private final BigInteger MAX_SEARCHABLE_BIDSPACE = BigInteger.valueOf(50000);
@@ -318,65 +323,12 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	 */
 
 	private int isNearNegotiationEnd() {
+		return progress.get(System.currentTimeMillis()) < tPhase ? 0 : 1; 
 		
-		if (progress.get(System.currentTimeMillis()) < 0.33) return 0; 		// first phase (00-20 seconds)
-		else if (progress.get(System.currentTimeMillis()) < 0.95) return 1; // second phase (20-59 seconds)
-		return 2; 															// third phase (59-60 seconds)
-	}
-	/**
-	 *  Method: createBid
-	 *  Description: This function creates a bid based on a given issue values frequency map
-	 *  Input: p_issueValFreqs - a copy of the issue values frequency map
-	 *  Output: a new bid, such that for each issue s from that domain the matching value v is the most frequent in the negotiation scenario
-	 * */
-	private Bid createBid(HashMap<IssueValKey, Integer> issueValFreqs_cpy) {
-		// A new issuemap to create the Bid by
-		Map<String, Value> issuemap = new HashMap<String, Value>();
-
-		Set<String> issues = domain.getIssues();
-		for (String s : issues) {
-			// For issue "s" in the domain:
-
-			// Create a list such that each element contains for an issue: value, value type and frequency of that value
-			// In the current negotiation scenario
-			List<IssueValueFreqElement> ls = IssueValKey.createValueFreqList(issueValFreqs_cpy, s);
-
-			if (ls.size() > 0) {
-				// If such a list contains values, then, we will search the value of which the frequency is maximal
-
-				int max_freq = -1;
-				int max_value_type = -1;
-				String max_freq_value = "";
-
-				// Searching for a maximal frequency value for issue "s"
-				for (IssueValueFreqElement ele : ls) { // TODO: remove just one value on each iteration
-					Integer freq = ele.freq;
-					if (freq > max_freq) {
-						max_freq_value = ele.value;
-						max_value_type = ele.value_type;
-						max_freq = freq;
-
-					}
-				}
-				Value v;
-				if (max_value_type == 0) {
-					v = new DiscreteValue(max_freq_value);
-				} else if (max_value_type == 1) {
-					v = new NumberValue(max_freq_value);
-				} else
-					throw new RuntimeException("Unknown Value type detected");
-				// Remove the selected issue and value from the current copy of the frequency map
-				IssueValKey ivk = new IssueValKey();
-				ivk.issue = s;
-				ivk.value = max_freq_value;
-				issueValFreqs_cpy.remove(ivk);
-
-				// Add to the issue map, the issue s, with the found maximal frequency v 
-				issuemap.put(s, v);
-			}
-
-		}
-		return new Bid(issuemap);
+		
+//		if () return 0; 		// first phase (00-20 seconds)
+//		else if (progress.get(System.currentTimeMillis()) < 0.95) return 1; // second phase (20-59 seconds)
+//		return 2; 															// third phase (59-60 seconds)
 	}
 
 	/** Provide a description of the agent */
@@ -420,11 +372,12 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			Bid agreement = agreements.getMap().values().iterator().next();
 			this.negotiationData.addAgreementUtil(this.utilitySpace.getUtility(agreement).doubleValue());
 			this.negotiationData.setOpponentUtil(this.calcOpValue(agreement));
+			this.negotiationData.updateOpponentOffers(this.opSum, this.opCounter);
+			
 			
 			System.out.println("MY OWN THRESHOLD: " + this.utilThreshold);
 			System.out.println("MY OWN UTIL: " + this.utilitySpace.getUtility(agreement).doubleValue());
 			System.out.println("EXP OPPONENT UTIL: " + this.calcOpValue(agreement));
-			System.out.println("OFFERS: " + this.counter + " OPTIMAL BID: " + this.optimalBidCounter);
 
 		}
 		else
@@ -432,21 +385,34 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 
 	}
 
-	/**
-	 * send our next offer
-	 */
+	// send our next offer
 	private void myTurn() throws IOException {
 		Action action;
+		
+		// save average of the last avgSplit offers (only when frequency table is stabilized)
+		if (isNearNegotiationEnd() > 0) {
+			int index = (int) ((tSplit - 1)/(1-tPhase) * (progress.get(System.currentTimeMillis()) - tPhase));  
+			this.opSum[index] += this.calcOpValue(lastReceivedBid);
+			this.opCounter[index]++;
+//			this.opSum += 
+//			if (++this.opCounter > avgSplit) {
+//				this.negotiationData.addOpponentOffer(,  this.opSum/ avgSplit);
+//				System.out.println(this.opSum/avgSplit);
+//				
+//				this.opCounter = 0;
+//				this.opSum = 0;
+//			}
+		}
+
+		// evaluate the offer and accept or give counter-offer
 		if (isGood(lastReceivedBid)) {
 			// If the last received bid is good: create Accept action
 			action = new Accept(me, lastReceivedBid);
 		} else {
-			
-
 			// there are 3 phases in the negotiation process:
 			// 1. Send random bids that considered to be GOOD for our agent
 			// 2. Send random bids that considered to be GOOD for both of the agents
-			// 3. Near negotiation end - accept lower offers (degraded threshold)
+			// 3. Near negotiation end - accept lower offers (degraded threshold) // TODO: this phase has been removed
 			Bid bid = null;
 			
 			switch (isNearNegotiationEnd()) {
@@ -473,47 +439,12 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 				bid = (isGood(bid) && isOpGood(bid)) ? bid : optimalBid;  // if the last bid isn't good, offer (default) the optimal bid
 				break;
 			}
-			
-//			if (isNearNegotiationEnd() < 2) {
-//				bid = optimalBid;
-//			}
-//			// Find a "good" counter bid
-//			if (bid == null) {
-//				int attempt = 0;
-//				// Create a copy of the current issue values frequency map
-//				HashMap<IssueValKey, Integer> issueValFreqs_cpy = IssueValKey.cloneIssueValMap(issueValFreqs);
-//
-//				// Try to find a "good" bid, until either the copy of the issue values frequency
-//				// map is empty
-//				// Or enough attempts have failed.
-//				while (attempt < 500 && issueValFreqs_cpy.size() > 0) {
-//
-//					bid = createBid(issueValFreqs_cpy);
-//					if (isGood(bid))
-//						break;
-//					else
-//						bid = null;
-//					attempt++;
-//				}
-//
-//				if (bid == null) {
-//					// Iterate randomly through list of bids until we find a good bid
-//
-//				}
-
 
 			// Create offer action
 			action = new Offer(me, bid);
-			this.counter++;
-			if (bid == this.optimalBid) {
-				this.optimalBidCounter++;
-			}
-			
 		}
 
 		// Send action
-
-		
 		getConnection().send(action);
 	}
 
