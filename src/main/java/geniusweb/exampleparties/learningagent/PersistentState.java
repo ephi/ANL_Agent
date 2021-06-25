@@ -24,8 +24,11 @@ import org.apache.commons.math3.fitting.WeightedObservedPoints;
 public class PersistentState {
 	private static final int tSplit = 40;
 	private static final double tPhase = 0.33;
-	private static final Double newWeight = 0.1; 
+	private static final Double newWeight = 0.2; 
 	private static final int polynomRank = 4;
+	private static final int smoothWidth = 3; // from each side of the element
+	private static final double opponentDecrease = 0.65;
+	private static final double defualtAlpha = 10.7;
 
 //	their data structures
     private Double avgUtility = 0.0;
@@ -37,9 +40,10 @@ public class PersistentState {
     private Double stdUtility = 0.0;
     private List<Double> negoResults = new ArrayList<Double>();
     private Map<String, Double> avgOpponentUtility = new HashMap<String, Double>();
+    private Map<String, Double> opponentAlpha = new HashMap<String, Double>();
     
     private Map<String, Double[]> opponentUtilByTime = new HashMap<String, Double[]>();
-    private Map<String, double[]> thresholdFuncrtion = new HashMap<String, double[]>();
+    private Map<String, double[]> thresholdFunction = new HashMap<String, double[]>();
 //    private Map<String, List<Integer>> opponentNegos = new HashMap<String, List<Integer>>(); // NOT IN USE FOR NOW
     
     /**
@@ -80,19 +84,30 @@ public class PersistentState {
             Double avgOpUtil = avgOpponentUtility.containsKey(opponent) ? avgOpponentUtility.get(opponent) : 0.0;
             avgOpponentUtility.put(opponent,
             		(avgOpUtil * encounters + negotiationData.getOpponentUtil()) / (encounters + 1));
-            Double[] opponentTimeUtil = opponentUtilByTime.containsKey(opponent) ? opponentUtilByTime.get(opponent) : new Double[tSplit];
+            
+            // update opponent utility over time
+            Double[] opponentTimeUtil;
+            if (opponentUtilByTime.containsKey(opponent))
+            	opponentTimeUtil = opponentUtilByTime.get(opponent);
+        	else {
+        		opponentTimeUtil = new Double[tSplit];
+        		for (int i=0; i<tSplit; i++) opponentTimeUtil[i] = 0.0;
+        	}
+            
+            // update values in the array
             Double[] newUtilData = negotiationData.getOpponentUtilByTime();
         	System.out.println(opponent + ":");
             for (int i=0; i < tSplit; i++) {
-            	if (opponentTimeUtil[i] == null)
+            	if (opponentTimeUtil[i] == 0)
             		opponentTimeUtil[i] = newUtilData[i];
             	else if (newUtilData[i] > 0)
-            		opponentTimeUtil[i] = (encounters*opponentTimeUtil[i] + newUtilData[i])/(encounters + 1);
+            		opponentTimeUtil[i] = ((1-newWeight)*opponentTimeUtil[i] + newWeight*newUtilData[i]);            		
             }
             opponentUtilByTime.put(opponent, opponentTimeUtil);
+            opponentAlpha.put(opponent, calcAlpha(opponentTimeUtil));
             
             // NOT IN USE because doesn't work
-            // thresholdFuncrtion.put(opponent, updateOpponentThreshold(opponentTimeUtil));
+//             thresholdFuncrtion.put(opponent, updateOpponentThreshold(opponentTimeUtil));
             
             opponentEncounters.put(opponent, encounters + 1);
         }
@@ -118,7 +133,43 @@ public class PersistentState {
     	
     }
 
-    public double calcAlpha(Double[] opponentTimeUtil) {
+    public Double calcAlpha(Double[] opponentTimeUtil) {
+    	// smoothing with smooth width of smoothWidth
+    	Double[] alphaArray = new Double[tSplit];
+    	for (int i=0; i<tSplit; i++) alphaArray[i] = 0.0;
+    	
+    	for (int i=0; i<tSplit; i++) {
+    		for (int j=Math.max(i-smoothWidth, 0); j<Math.min(i+smoothWidth+1, tSplit); j++)
+    			alphaArray[i] += opponentTimeUtil[j];
+    		alphaArray[i] /= (Math.min(i+smoothWidth+1, tSplit) - Math.max(i-smoothWidth, 0));
+    		System.out.println(i*(1-tPhase)/(tSplit-1)+tPhase + ", " + alphaArray[i]);
+    	}
+    	
+    	// find the last index with data in alphaArray
+    	int maxIndex, t;
+    	for (maxIndex=0; maxIndex<tSplit && alphaArray[maxIndex]>0; maxIndex++);
+    	
+    	// find t, time that threshold decrease by 50%
+    	double maxValue = alphaArray[0];
+    	double minValue = alphaArray[Math.max(maxIndex - smoothWidth - 1, 0)];
+    	
+    	// if there is no clear trend-line, return default value
+    	if (maxValue - minValue < 0.1)
+    		return defualtAlpha;
+    	
+    	for (t=0; t<tSplit && alphaArray[t]>(maxValue - opponentDecrease*(maxValue-minValue)); t++);
+    	System.out.println("max index: " + maxIndex + ",	t index: " + t);
+    	
+    	double[] calibratedPolynom = {572.83,-1186.7, 899.29, -284.68, 32.911};
+    	Double alpha = calibratedPolynom[0];
+    	
+    	System.out.println("fist step of calc: " + (maxIndex*((double)t/tSplit) + (tSplit-maxIndex)*0.85)/tSplit);
+    	double tTime = tPhase + (1-tPhase)*(maxIndex*((double)t/tSplit) + (tSplit-maxIndex)*0.85)/tSplit;
+    	System.out.println("time time time: " + tTime);
+    	for (int i=1; i<calibratedPolynom.length; i++)
+    		alpha = alpha*tTime + calibratedPolynom[i];
+    	System.out.println("alpha alpha alpha: " + alpha);
+    	return alpha;
     	
     }
     
@@ -128,6 +179,10 @@ public class PersistentState {
     
     public double getStdUtility() {
     	return this.stdUtility;
+    }
+    
+    public Double getOpponentAlpha(String opponent) {
+    	return this.knownOpponent(opponent) ? opponentAlpha.get(opponent) : 0.0;
     }
     
     public double getOpUtility(String opponent) {

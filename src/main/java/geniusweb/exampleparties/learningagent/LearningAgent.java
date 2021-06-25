@@ -82,6 +82,9 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	private double opAvgUtil = 0.0;
 	private double utilThreshold = 0.95;
 	
+	private static final double defualtAlpha = 10.7;
+	private double alpha = defualtAlpha;
+	
 	// estimate opponent time-variant threshold function
 	private static final int tSplit = 40;
 	private int[] opCounter = new int[tSplit];
@@ -142,7 +145,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 					ObjectMapper objectMapper = new ObjectMapper();
 					this.persistentState = objectMapper.readValue(this.persistentPath, PersistentState.class);
 					this.avgUtil = this.persistentState.getAvgUtility();
-					this.stdUtil = this.persistentState.getStdUtility();					
+					this.stdUtil = this.persistentState.getStdUtility();
 				} else {
 					this.persistentState = new PersistentState();
 				}
@@ -259,7 +262,12 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 
 						// Add name of the opponent to the negotiation data
 						this.negotiationData.setOpponentName(this.opponentName);
-						this.opAvgUtil = this.persistentState.getOpUtility(this.opponentName);
+						System.out.print(this.opponentName);
+						this.opAvgUtil = this.persistentState.getOpUtility(this.opponentName); //TODO: WHAT IT IS
+						
+						// decay rate of threshold function
+						this.alpha = this.persistentState.getOpponentAlpha(this.opponentName);
+						this.alpha = this.alpha > 0.0 ? this.alpha : defualtAlpha; 
 					}
 					// Process the action of the opponent.
 					processAction(action);
@@ -352,6 +360,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			double utilVal = this.utilitySpace.getUtility(this.lastReceivedBid).doubleValue();
 			this.negotiationData.addBidUtil(utilVal);
 			
+			
 //			if (this.counter > 500) {
 //				System.out.print(false);
 			
@@ -372,7 +381,6 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			Bid agreement = agreements.getMap().values().iterator().next();
 			this.negotiationData.addAgreementUtil(this.utilitySpace.getUtility(agreement).doubleValue());
 			this.negotiationData.setOpponentUtil(this.calcOpValue(agreement));
-			this.negotiationData.updateOpponentOffers(this.opSum, this.opCounter);
 			
 			
 			System.out.println("MY OWN THRESHOLD: " + this.utilThreshold);
@@ -382,7 +390,11 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 		}
 		else
 			System.out.println("!!!!!!!!!!!!!! NO AGREEMENT !!!!!!!!!!!!!!! /// MY THRESHOLD: " + this.utilThreshold);
-
+		
+		// update the opponent offers map, regardless of achieving agreement or not
+		try {
+			this.negotiationData.updateOpponentOffers(this.opSum, this.opCounter);
+		} catch (Exception e) { }
 	}
 
 	// send our next offer
@@ -461,7 +473,8 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 		double maxVlue = (optimalBid != null) ? this.utilitySpace.getUtility(optimalBid).doubleValue() : 1.0;
 		double avgMaxUtility = this.persistentState.knownOpponent(this.opponentName) ? this.persistentState.getAvgMaxUtility(this.opponentName) : this.avgUtil; 
 
-		this.utilThreshold = maxVlue - (0.6*maxVlue + 0.4*avgMaxUtility - this.avgUtil + 1*this.stdUtil)*(Math.exp(progress.get(System.currentTimeMillis())-1))/(Math.E - 1);
+		this.utilThreshold =  maxVlue - (maxVlue - 0.6*this.avgUtil - 0.4*avgMaxUtility + this.stdUtil)*
+				(Math.exp(this.alpha * progress.get(System.currentTimeMillis()) - 1))/(Math.exp(this.alpha) - 1);
 		return this.utilitySpace.getUtility(bid).doubleValue() >= this.utilThreshold;
 //		}
 		// Check if we already know the opponent

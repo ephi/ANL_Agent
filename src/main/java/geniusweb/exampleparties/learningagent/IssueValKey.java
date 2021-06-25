@@ -29,7 +29,7 @@ public class IssueValKey {
     	 for (Map.Entry<IssueValKey,Integer> entry : m.entrySet()) {
     		 IssueValKey ivk = entry.getKey();
     		 if(ivk.issue.equals(issue)) {
-    			 IssueValueFreqElement e = new IssueValueFreqElement();
+    			 IssueValueFreqElement e = new IssueValueFreqElement(); // TODO: WHAT IS 
     			 e.freq = entry.getValue();
     			 e.value_type = ivk.value_type;
     			 e.value      = ivk.value;
