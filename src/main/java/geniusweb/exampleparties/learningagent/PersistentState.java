@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 public class PersistentState {
 	private static final int tSplit = 40;
 	private static final double tPhase = 0.2;
-	private static final Double newWeight = 0.2; 
+	private static final Double newWeight = 0.3; 
 //	private static final int polynomRank = 4;
 	private static final int smoothWidth = 3; // from each side of the element
 	private static final double opponentDecrease = 0.65;
@@ -54,7 +54,9 @@ public class PersistentState {
      */
     public void update(NegotiationData negotiationData) {
         // Keep track of the average utility that we obtained
-    	this.avgUtility = (this.avgUtility * negotiations + negotiationData.getAgreementUtil())
+    	double newUtil = (negotiationData.getAgreementUtil() > 0) ? negotiationData.getAgreementUtil() : avgUtility - 1.1*Math.pow(stdUtility, 2); 
+    	
+    	this.avgUtility = (this.avgUtility * negotiations + newUtil)
                 / (negotiations + 1);
         
         // Keep track of the number of negotiations that we performed
@@ -97,9 +99,16 @@ public class PersistentState {
             
             // update values in the array
             Double[] newUtilData = negotiationData.getOpponentUtilByTime();
-        	System.out.println(opponent + ":");
+            
+            // find the ratio of decrease in the array, for updating 0-s in the array
+            double ratio = opponentTimeUtil[0] > 0.0 ? ((1-newWeight)*opponentTimeUtil[0] + newWeight*newUtilData[0])/opponentTimeUtil[0] : 1;
+            
+            // update the array
             for (int i=0; i < tSplit; i++) {
-        		opponentTimeUtil[i] = ((1-newWeight)*opponentTimeUtil[i] + newWeight*newUtilData[i]);            		
+            	if (newUtilData[i] > 0)
+            		opponentTimeUtil[i] = ((1-newWeight)*opponentTimeUtil[i] + newWeight*newUtilData[i]);
+            	else
+            		opponentTimeUtil[i] *= ratio;
             }
             opponentUtilByTime.put(opponent, opponentTimeUtil);
             opponentAlpha.put(opponent, calcAlpha(opponent));

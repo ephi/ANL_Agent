@@ -77,9 +77,8 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	private HashMap<String, Pair> freqMap;
 	
 	// Average and standard deviation of the competition for determine "good" utility threshold
-	private double avgUtil = 0.95;
-	private double stdUtil = 0.1;
-	private double opAvgUtil = 0.0;
+	private double avgUtil = 0.90;
+	private double stdUtil = 0.10;
 	private double utilThreshold = 0.95;
 	
 	private static final double defualtAlpha = 10.7;
@@ -98,6 +97,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	//Best bid for agent, exists if bid space is small enough to search in
 	private final BigInteger MAX_SEARCHABLE_BIDSPACE = BigInteger.valueOf(50000);
 	private Bid optimalBid = null;
+	private Bid bestOfferBid = null;
 	private AllBidsList allBidList;
 	
 	public LearningAgent() { // TODO: change name
@@ -146,6 +146,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 					this.persistentState = objectMapper.readValue(this.persistentPath, PersistentState.class);
 					this.avgUtil = this.persistentState.getAvgUtility();
 					this.stdUtil = this.persistentState.getStdUtility();
+					System.out.println("avg: " + this.avgUtil + "  std: " + this.stdUtil*this.stdUtil);
 				} else {
 					this.persistentState = new PersistentState();
 				}
@@ -263,7 +264,6 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 						// Add name of the opponent to the negotiation data
 						this.negotiationData.setOpponentName(this.opponentName);
 						System.out.print(this.opponentName);
-						this.opAvgUtil = this.persistentState.getOpUtility(this.opponentName);
 						this.opThreshold = this.persistentState.getSmoothThresholdOverTime(this.opponentName);
 						if (this.opThreshold != null)
 							for (int i=1; i<tSplit; i++)
@@ -383,6 +383,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			
 			
 			System.out.println("MY OWN THRESHOLD: " + this.utilThreshold);
+			
 			System.out.println("MY OWN UTIL: " + this.utilitySpace.getUtility(agreement).doubleValue());
 			System.out.println("EXP OPPONENT UTIL: " + this.calcOpValue(agreement));
 
@@ -390,6 +391,7 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 		else
 			System.out.println("!!!!!!!!!!!!!! NO AGREEMENT !!!!!!!!!!!!!!! /// MY THRESHOLD: " + this.utilThreshold);
 		
+		System.out.println("TIME OF AGREEMENT: " + progress.get(System.currentTimeMillis()));
 		// update the opponent offers map, regardless of achieving agreement or not
 		try {
 			this.negotiationData.updateOpponentOffers(this.opSum, this.opCounter);
@@ -415,31 +417,36 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			// there are 3 phases in the negotiation process:
 			// 1. Send random bids that considered to be GOOD for our agent
 			// 2. Send random bids that considered to be GOOD for both of the agents
-			// 3. Near negotiation end - accept lower offers (degraded threshold) // TODO: this phase has been removed
 			Bid bid = null;
 			
+			if (this.bestOfferBid == null)
+				this.bestOfferBid = lastReceivedBid;
+			else if (this.utilitySpace.getUtility(lastReceivedBid).doubleValue() > this.utilitySpace.getUtility(this.bestOfferBid).doubleValue())
+				this.bestOfferBid = lastReceivedBid;
+				
 			switch (isNearNegotiationEnd()) {
 			case 0:
 				for (int attempt = 0; attempt < 1000 && !isGood(bid); attempt++) {
 					long i = random.nextInt(allBidList.size().intValue());
 					bid = allBidList.get(BigInteger.valueOf(i));
-					// System.out.println("My utility for opponent preferred bid is: " +
-					// this.utilitySpace.getUtility(bid).doubleValue());
 				}
 				bid = (isGood(bid)) ? bid : optimalBid;  // if the last bid isn't good, offer (default) the optimal bid
 				break;
 			
-			case 1:	
+			case 1:
 			case 2:
-				for (int attempt = 0; attempt < 1000 && !isGood(bid) && !isOpGood(bid); attempt++) {
+				for (int attempt = 0; attempt < 1000 && (bid != optimalBid) && !isGood(bid) && !isOpGood(bid); attempt++) {
 					long i = random.nextInt(allBidList.size().intValue());
 					bid = allBidList.get(BigInteger.valueOf(i));
 				}
-				bid = (isGood(bid) && isOpGood(bid)) ? bid : optimalBid;  // if the last bid isn't good, offer (default) the optimal bid
+				
+				bid = ((progress.get(System.currentTimeMillis()) > 0.99) && isGood(bestOfferBid)) ? bestOfferBid : bid;
+				bid = (isGood(bid)) ? bid : optimalBid;  // if the last bid isn't good, offer (default) the optimal bid
 				break;
 			}
 
 			// Create offer action
+//			System.out.println("Time: " + progress.get(System.currentTimeMillis()) + "     Threshold: " + this.utilThreshold + "   My offer: " + this.utilitySpace.getUtility(bid).doubleValue() + "   Opponent value: " + calcOpValue(bid));
 			action = new Offer(me, bid);
 		}
 
@@ -456,11 +463,11 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 	private boolean isGood(Bid bid) {
 		if (bid == null)
 			return false;
-		double maxVlue = (optimalBid != null) ? this.utilitySpace.getUtility(optimalBid).doubleValue() : 1.0;
+		double maxVlue = (optimalBid != null) ? 0.95*this.utilitySpace.getUtility(optimalBid).doubleValue() : 0.95;
 		double avgMaxUtility = this.persistentState.knownOpponent(this.opponentName) ? this.persistentState.getAvgMaxUtility(this.opponentName) : this.avgUtil; 
 
-		this.utilThreshold =  maxVlue - (maxVlue - 0.6*this.avgUtil - 0.4*avgMaxUtility + this.stdUtil)*
-				(Math.exp(this.alpha * progress.get(System.currentTimeMillis()) - 1))/(Math.exp(this.alpha) - 1);
+		this.utilThreshold =  maxVlue - (maxVlue - 0.6*this.avgUtil - 0.4*avgMaxUtility + Math.pow(this.stdUtil,2))*
+				(Math.exp(this.alpha * progress.get(System.currentTimeMillis())) - 1)/(Math.exp(this.alpha) - 1);
 		return this.utilitySpace.getUtility(bid).doubleValue() >= this.utilThreshold;
 	}
 	
@@ -524,9 +531,9 @@ public class LearningAgent extends DefaultParty { // TODO: change name
 			return false;
 		
 		double value = calcOpValue(bid);
-//		double opThreshold = this.opAvgUtil != 0 ? 0.8*this.opAvgUtil : 0.6; // default value
 		int index = (int) ((tSplit - 1)/(1-tPhase) * (progress.get(System.currentTimeMillis()) - tPhase));
-		Double opThreshold = (this.opThreshold != null) && (this.opThreshold[index] < 0.8) ? this.opThreshold[index] : 0.8;  
+//		Double opThreshold = (this.opThreshold != null) && (this.opThreshold[index] < 0.7) ? Math.max(1-2*this.opThreshold[index], 0.2) : 0.4;
+		Double opThreshold = (this.opThreshold != null) ? Math.max(1-2*this.opThreshold[index], 0.2) : 0.6;
 		return (value > opThreshold); 
 	}
 	
