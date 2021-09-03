@@ -11,6 +11,7 @@ In automated-negotiation terms, it is customary to represent an agent by BOA mod
 1. Bidding strategy
 2. Opponent model
 3. Acceptance strategy
+
 We will discuss each part separately. The first subsection describes the bidding mechanism of the agent. The second subsection describes the opponent model, includes the opponent threshold model and utility function model. The third subsection describe our acceptance methodology and the adaptive-alpha algorithm.
 
 ## Bidding Strategy
