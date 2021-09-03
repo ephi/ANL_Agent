@@ -70,5 +70,6 @@ As mentioned above, the threshold function is used also for determining if a spe
 
 # Results
 AlphaBIU was the winner agent in ANL 2021.
-Performance details can be found in result.xlsx, in this repository.
+
+Performance details can be found in AlphaBIU.csv, in this repository.
 
