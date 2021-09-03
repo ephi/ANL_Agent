@@ -68,9 +68,7 @@ For calculating alpha, we're looking for the point that the opponent agent is al
 This way, we increase our chance to achieve better utility from the negotiation round (because the opponent may compromise before we will), and yet compromise down to T(1) in the end of the negotiation round, for maximize chance to finish with good agreement.
 As mentioned above, the threshold function is used also for determining if a specific bid is good.
 
-# Conclusions
-Throughout working on the agent, we learned some important points, but mainly exposed to the world of automated negotiation, include main techniques, architectures and models.
-We cannot predict our agent's performance in the competition, but hope that it'll achieve good results. A lot of efforts was invested in this agent, hopefully making it a hard competitor. We think that some innovative and interesting ideas are inherent part of the agent (extended frequency model, opponent threshold model, adaptive point of compromising).
-
+# Results
 AlphaBIU was the winner agent in ANL 2021.
+Performance details can be found in result.xlsx, in this repository.
 
